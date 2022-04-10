@@ -2,6 +2,8 @@ from itertools import count
 from TikTokApi import TikTokApi
 #from TiktokApi import *
 import logging
+import requests
+import re
 
 verifyFP = 'verify_l0h7ncp4_Fd2ZmLZO_WHvz_42pj_8zhK_gyZjJYxzHwf9'
 
@@ -31,6 +33,17 @@ def searchUsers(name, numOfResults, username = None):
 
 def searchHashtags(name, numOfResults):
     return list(api.hashtag(name = name).videos(count= numOfResults))
+
+def getUsersVideos( username):
+    response = requests.get('https://tiktok.com/@' + username, headers= {'User-Agent' : 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.79 Safari/537.36'}).text
+    compileStr = '"user-post"(?:.)*?"browserList"'
+    p = re.compile(compileStr, re.DOTALL)
+    trimmedResponse = p.search(response).group(0)
+    p = re.compile('\d+')
+    results = []
+    for id in p.findall(trimmedResponse):
+        results.append(id)
+    return results
 
 
 with TikTokApi(logging_level=logging.DEBUG, custom_verify_fp=verifyFP) as api:
