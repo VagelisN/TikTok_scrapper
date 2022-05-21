@@ -32,3 +32,12 @@ with TikTokApi(logging_level=logging.DEBUG) as api:
         '''
         hashtags.append(getChallengeHashtagsFromVideo(x)) 
 
+        '''
+        For each separate hashtag in list, get 100 videos, 
+        and keep the top 5 based on the following formula
+        VC + LC * 1.6 + SC * 2.2
+        '''
+        
+        ''' 
+        Then insert each challenge to DB
+        '''
