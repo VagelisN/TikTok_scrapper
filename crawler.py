@@ -19,18 +19,25 @@ def getUsersVideos(username):
     return results
 
 def getChallengeHashtagsFromVideo(video):
-    print(video.as_dict['stats']['playCount'])
+    results = []
+    challenges = video.hashtags
+    for challenge in challenges:
+        name = challenge.name
+        if (name != 'challenge') and (name != 'challenges') and ('challenge' in name):
+            results.append(name)
+    return results
 
 
 client = MongoClient("mongodb+srv://TikTokApi:3patates@tiktokcluster.vcf8n.mongodb.net/?retryWrites=true&w=majority")
 hashtags = []
 with TikTokApi(logging_level=logging.DEBUG) as api:
-    for x in searchHashtags('challenges', 50): 
+    for x in searchHashtags('challenge', 45): 
         '''
         We need to get each specific hashtag that contains 
         the word 'challenge', without being an exact match
         '''
-        hashtags.append(getChallengeHashtagsFromVideo(x)) 
+        temp = getChallengeHashtagsFromVideo(x)
+        if temp : hashtags.append(temp) 
 
         '''
         For each separate hashtag in list, get 100 videos, 
@@ -41,3 +48,4 @@ with TikTokApi(logging_level=logging.DEBUG) as api:
         ''' 
         Then insert each challenge to DB
         '''
+    print(hashtags)
