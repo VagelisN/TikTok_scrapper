@@ -1,4 +1,6 @@
 import pymongo
+from datetime import datetime
+from bson.json_util import dumps
 
 def connectToDB(name):
     try:
@@ -11,3 +13,27 @@ def connectToDB(name):
         message = template.format(type(ex).__name__, ex.args)
         print(message)
 
+
+
+
+def getDailyChallenges():
+    '''
+    Return today's 5 top scoring challenges
+    '''
+
+    # connect to db
+    db = connectToDB("TikTokDB")
+    collection = db.DailyTrends
+
+    # find items with date equal to today
+    cursor = collection.find({
+        "date" : {
+            "$eq": datetime.today().replace(hour=0, minute=0, second=0, microsecond=0)
+        }},
+        { "name" : 1, "_id" : 0, "score": 1 }  # selected fields
+    ).sort("score", -1).limit(5)
+
+    # convert to json
+    json_data = dumps(cursor)
+
+    return json_data

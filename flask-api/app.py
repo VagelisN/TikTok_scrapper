@@ -1,15 +1,13 @@
-from flask import Flask, request
-from service import *
+from flask import Flask, request, jsonify
+import service
 
 
 app = Flask(__name__)
 
-connectToDB("TikTokDB")
-
 
 @app.route("/api/v1/daily", methods=["GET"])
 def getDailyChallenges():
-    return displayMalakies()
+    return service.getDailyChallenges()
 
 
 @app.route("/api/v1/makeCompilation", methods=["GET"])
