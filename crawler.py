@@ -1,7 +1,7 @@
 from operator import itemgetter
 from TikTokApi import TikTokApi
 from pymongo import MongoClient
-from datetime import date
+from datetime import datetime
 import logging
 import requests
 import re
@@ -90,7 +90,15 @@ def getTopVideosForHashtag(hashtagName):
     totalShares = sum(i['shares'] for i in topVideos)
     totalViews = sum(i['views'] for i in topVideos)
     totalScore = sum(i['score'] for i in topVideos)
-    return {"name": hashtagName, "date": date.today().strftime("%m/%d/%Y"), "likes" : totalLikes, "views": totalViews, "shares": totalShares, "score": totalScore, "videos": topVideos}
+    return {
+        "name": hashtagName, 
+        "date": datetime.today().replace(hour=0, minute=0, second=0, microsecond=0, 
+        "likes" : totalLikes, 
+        "views": totalViews, 
+        "shares": totalShares, 
+        "score": totalScore, 
+        "videos": topVideos
+    }
 
 
 client = MongoClient("mongodb+srv://TikTokApi:3patates@tiktokcluster.vcf8n.mongodb.net/?retryWrites=true&w=majority")
