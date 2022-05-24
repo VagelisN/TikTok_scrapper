@@ -1,4 +1,5 @@
 import pymongo
+import utils
 from datetime import datetime
 from bson.json_util import dumps
 
@@ -37,3 +38,25 @@ def getDailyChallenges():
     json_data = dumps(cursor)
 
     return json_data
+
+
+
+def getTopDailyVideo(hashtag):
+    # connect to db
+    db = connectToDB("TikTokDB")
+    collection = db.DailyTrends
+
+    # find items with date equal to today
+    cursor = collection.find({
+        "date" : {
+            "$eq": datetime.today().replace(hour=0, minute=0, second=0, microsecond=0)
+        },
+        "name" : hashtag
+        },
+        {"_id" : 0, "videos": { "id": 1} }  # selected fields
+    ).sort("score", -1).limit(1)
+    
+    videos = cursor.next()
+    id_list = [video["id"] for video in videos["videos"]]
+
+    return utils.makeCompilation(id_list)
