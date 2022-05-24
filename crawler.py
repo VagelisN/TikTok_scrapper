@@ -5,7 +5,6 @@ from datetime import datetime
 import logging
 import requests
 import re
-import time
 
 baseUrl = 'https://m.tiktok.com/api/search/general/full/?aid=1988&keyword='  
 urlOffSet = '&offset='  
@@ -28,10 +27,20 @@ def getPopularChallengeHashtags(name):
             for challenge in data["item"]["textExtra"]:
                 tmp = challenge["hashtagName"]
                 tmp = tmp.lower()
-                if tmp != 'challenge' and tmp != 'challenges' and 'challenge' in tmp:
+                if tmp != 'challenge' and tmp != 'challenges' and 'challenge' in tmp and not isHashtagContainedInDb(tmp):
                     challenges.add(tmp)
         offset += 12
     return challenges
+
+def isHashtagContainedInDb( hashtag):
+    result = list(dailyTrendsCollection.find({
+        'name': hashtag,
+        'date': datetime.today().replace(hour=0, minute=0, second=0, microsecond=0)
+    }))
+    if len(result) == 0:
+        return False
+    else:
+        return True
 
 def getTopVideosForHashtag(name):
     videos = []
