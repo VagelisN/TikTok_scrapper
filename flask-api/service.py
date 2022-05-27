@@ -60,3 +60,21 @@ def getTopDailyVideo(hashtag):
     id_list = [video["id"] for video in videos["videos"]]
 
     return utils.makeCompilation(id_list)
+
+def getChallengeEvolution(hashtag, metric):
+    # connect to db
+    db = connectToDB("TikTokDB")
+    collection = db.DailyTrends
+
+     # find entries of hashtag with ascending date
+    cursor = collection.find({
+        "name" : hashtag
+        },
+        {"_id" : 0, "videos": 0}  # selected fields
+    ).sort("date", 1).limit(1)
+
+    data = utils.makePlotAndGetBinary(cursor, hashtag, metric)
+
+    return data
+
+
