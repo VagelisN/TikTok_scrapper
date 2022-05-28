@@ -9,6 +9,9 @@ import os
 from os.path import isfile, join
 import shutil
 
+import matplotlib.pyplot as plt
+import matplotlib
+
 def makeCompilation(video_ids):
     downloadVideosById(video_ids, "./videos")
     concatenateVideosInFolder("./videos", "./videos/compilation.mp4")
@@ -53,3 +56,43 @@ def concatenateVideosInFolder(input_dir, output_file_path):
 
     final = concatenate_videoclips(clips, method="compose")
     final.write_videofile(output_file_path)
+
+def makePlotAndGetBinary(cursor, hashtag, metric):
+
+    # get axis from pymongo cursor
+    x_axis = []
+    y_axis = []
+    for item in list(cursor):
+        x_axis.append(item["date"])
+        y_axis.append(item["views"])
+
+
+    # create plot
+    plt.rcParams["figure.figsize"] = (10, 8)
+    fig, ax = plt.subplots()
+
+    ax.plot(x_axis, y_axis)
+    
+    ax.get_yaxis().set_major_formatter(
+    matplotlib.ticker.FuncFormatter(lambda x, p: format(int(x), ',')))
+
+
+
+    plt.xticks(x_axis)
+    plt.yticks(y_axis)
+
+    plt.xlabel("Date")
+    plt.ylabel(metric.capitalize())
+
+    plt.title(f"Evolution of the hashtag {hashtag} based on {metric}")
+
+    # save plot and get binary 
+    plt.savefig('plot.png')
+
+    image_file = open("plot.png", "rb") # opening for [r]eading as [b]inary
+    data = image_file.read() # if you only wanted to read 512 bytes, do .read(512)
+    image_file.close()
+
+    os.remove("plot.png")
+
+    return data

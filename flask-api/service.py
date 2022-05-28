@@ -66,16 +66,29 @@ def getTopDailyVideo(hashtag):
 
     return utils.makeCompilation(id_list)
 
+def getChallengeEvolution(hashtag, metric):
+    # connect to db
+    db = connectToDB("TikTokDB")
+    collection = db.DailyTrends
+    # find entries of hashtag with ascending date
+    cursor = collection.find({
+        "name" : hashtag
+        },
+        {"_id" : 0, "videos": 0}  # selected fields
+    ).sort("date", 1).limit(1)
+
+    data = utils.makePlotAndGetBinary(cursor, hashtag, metric)
+
+    return data
+
 '''
 Gets all challenges with at least two days of data.
 Returns the one with the biggest increase in score between
 the last metric and the first one.
 '''
 def getMostTrendingChallenge() -> dict:
-    # connect to db
     db = connectToDB("TikTokDB")
     collection = db.DailyTrends
-
     # find items with date equal to today
     cursor = collection.find({},{}).sort([("name", 1), ('date', 1)])
     
@@ -124,3 +137,4 @@ def __calculateGainedScore(challenges: dict) -> list:
             scores.append({'name': name, 'minScore': int(minScore), 'maxScore': int(maxScore), 'difference': int(difference), 'likesGained': int(maxLikes - minLikes), 'viewsGained': int(maxViews - minViews), 'sharesGained': int(maxShares - minShares)})
     
     return sorted(scores, key=itemgetter('difference'), reverse=True)
+
