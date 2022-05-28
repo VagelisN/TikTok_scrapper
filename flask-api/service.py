@@ -1,7 +1,12 @@
+from cmath import inf
+from operator import itemgetter
+from re import L
 import pymongo
 import utils
+import math
 from datetime import datetime
 from bson.json_util import dumps
+
 
 def connectToDB(name):
     try:
@@ -60,3 +65,62 @@ def getTopDailyVideo(hashtag):
     id_list = [video["id"] for video in videos["videos"]]
 
     return utils.makeCompilation(id_list)
+
+'''
+Gets all challenges with at least two days of data.
+Returns the one with the biggest increase in score between
+the last metric and the first one.
+'''
+def getMostTrendingChallenge() -> dict:
+    # connect to db
+    db = connectToDB("TikTokDB")
+    collection = db.DailyTrends
+
+    # find items with date equal to today
+    cursor = collection.find({},{}).sort([("name", 1), ('date', 1)])
+    
+    challenges = dict()
+    for i in cursor: 
+        name = i['name']
+        if name not in challenges.keys():
+            challenges[name] = [i]
+        else:
+            challenges[name].append(i)
+    return __calculateGainedScore(challenges)[:5]
+
+def getOverallMostPopularVideos():
+    db = connectToDB("TikTokDB")
+    collection = db.DailyTrends
+    encounteredVideos = {}
+    cursor = collection.find({},{"_id": 0 ,"date": 1, "videos": 1})
+    for i in cursor:
+        videos = i['videos']
+        for vid in videos:
+            if vid['id'] not in encounteredVideos.keys():
+                encounteredVideos[vid['id']] = vid['score']
+            elif vid['score'] > encounteredVideos[vid['id']]:
+                encounteredVideos[vid['id']] = vid['score']
+    mostPopular = sorted(encounteredVideos.items(), key= lambda item: item[1], reverse= True)[:10]
+    return [i[0] for i in mostPopular]
+
+def __calculateGainedScore(challenges: dict) -> list:
+    scores = list()
+    for key in challenges.keys():
+        minScore, minViews, minLikes, minShares = math.inf, math.inf, math.inf, math.inf
+        maxScore, maxViews, maxLikes, maxShares = 0, 0, 0, 0
+        name: str
+        for item in challenges[key]:
+            score = item['score']
+            views = item['views']
+            likes = item['likes']
+            shares = item['shares']
+            name = item['name']
+            if score < minScore:
+                minViews, minLikes, minShares, minScore = views, likes, shares, score
+            if score > maxScore:
+                maxViews, maxLikes, maxShares, maxScore = views, likes, shares, score
+        difference = maxScore - minScore
+        if difference > 0:
+            scores.append({'name': name, 'minScore': int(minScore), 'maxScore': int(maxScore), 'difference': int(difference), 'likesGained': int(maxLikes - minLikes), 'viewsGained': int(maxViews - minViews), 'sharesGained': int(maxShares - minShares)})
+    
+    return sorted(scores, key=itemgetter('difference'), reverse=True)

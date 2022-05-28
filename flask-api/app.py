@@ -23,11 +23,14 @@ def getVideo():
         return response
     else:
         return "hashtag url parameter needed"
-    
 
+@app.route("/api/v1/most-improved-challenge", methods=["GET"])
+def getMostImprovedChallenges():
+    return jsonify(challenges=service.getMostTrendingChallenge())
 
-
-
+@app.route("/api/v1/overall-most-popular-challenge-videos", methods=["GET"])
+def getOverallMostPopularChallengeVideos():
+    return jsonify(videos=service.getOverallMostPopularVideos())
 
 if __name__ == "__main__":
     app.run(debug=True, threaded=False, processes=1)
