@@ -96,3 +96,37 @@ def makePlotAndGetBinary(cursor, hashtag, metric):
     os.remove("plot.png")
 
     return data
+
+
+
+def plotCrawlingProgress(dailyScores):
+
+    # get axis from pymongo cursor
+    x_axis = []
+    y_axis = []
+    for item in dailyScores.keys():
+        x_axis.append(item)
+        y_axis.append(dailyScores[item])
+
+    # create plot
+    plt.rcParams["figure.figsize"] = (10, 8)
+    fig, ax = plt.subplots()
+
+    ax.plot(x_axis, y_axis)
+    
+    ax.get_yaxis().set_major_formatter(
+    matplotlib.ticker.FuncFormatter(lambda x, p: format(int(x), ',')))
+
+    plt.xticks(x_axis)
+    plt.yticks(y_axis)
+    plt.xlabel("Date")
+    plt.ylabel('Score')
+    plt.title(f"Crawling score evolution")
+
+    # save plot and get binary 
+    plt.savefig('plot.png')
+    image_file = open("plot.png", "rb") # opening for [r]eading as [b]inary
+    data = image_file.read() # if you only wanted to read 512 bytes, do .read(512)
+    image_file.close()
+    os.remove("plot.png")
+    return data

@@ -23,11 +23,7 @@ def getDailyChallenges():
         }},
         { "name" : 1, "_id" : 0, "score": 1 }  # selected fields
     ).sort("score", -1).limit(5)
-
-    # convert to json
-    json_data = dumps(cursor)
-
-    return json_data
+    return [doc for doc in cursor]
 
 
 def getTopDailyVideo(hashtag):
@@ -59,7 +55,7 @@ def getChallengeEvolution(hashtag, metric):
         "name" : hashtag
         },
         {"_id" : 0, "videos": 0}  # selected fields
-    ).sort("date", 1).limit(1)
+    ).sort("date", 1)
 
     data = utils.makePlotAndGetBinary(cursor, hashtag, metric)
     return data
@@ -101,6 +97,20 @@ def getOverallMostPopularVideos():
     mostPopular = sorted(encounteredVideos.items(), key= lambda item: item[1], reverse= True)[:10]
     return [i[0] for i in mostPopular]
 
+def getDailyCrawlingScore():
+    db = connectToDB("TikTokDB")
+    collection = db.DailyTrends
+    dailyScores = dict()
+    cursor = collection.find({},{"_id": 0 ,"name": 1, 'date': 1 , "score": 1}).sort('date', 1)
+    for i in cursor:
+        date = i['date']
+        score = int(i['score'])
+        if date not in dailyScores.keys():
+            dailyScores[date] = score
+        else:
+            prevScore = dailyScores[date]
+            dailyScores[date] = prevScore + score
+    return utils.plotCrawlingProgress(dailyScores)
 
 def __calculateGainedScore(challenges: dict) -> list:
     scores = list()
