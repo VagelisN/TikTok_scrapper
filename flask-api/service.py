@@ -8,25 +8,10 @@ from datetime import datetime
 from bson.json_util import dumps
 
 
-def connectToDB(name):
-    try:
-        client = pymongo.MongoClient("mongodb+srv://TikTokApi:3patates@tiktokcluster.vcf8n.mongodb.net/?retryWrites=true&w=majority")
-        db = client[f"{name}"]
-        return db
-
-    except Exception as ex:
-        template = "An exception of type {0} occurred. Arguments:\n{1!r}"
-        message = template.format(type(ex).__name__, ex.args)
-        print(message)
-
-
-
-
 def getDailyChallenges():
     '''
     Return today's 5 top scoring challenges
     '''
-
     # connect to db
     db = connectToDB("TikTokDB")
     collection = db.DailyTrends
@@ -43,7 +28,6 @@ def getDailyChallenges():
     json_data = dumps(cursor)
 
     return json_data
-
 
 
 def getTopDailyVideo(hashtag):
@@ -63,8 +47,8 @@ def getTopDailyVideo(hashtag):
     
     videos = cursor.next()
     id_list = [video["id"] for video in videos["videos"]]
-
     return utils.makeCompilation(id_list)
+
 
 def getChallengeEvolution(hashtag, metric):
     # connect to db
@@ -78,8 +62,8 @@ def getChallengeEvolution(hashtag, metric):
     ).sort("date", 1).limit(1)
 
     data = utils.makePlotAndGetBinary(cursor, hashtag, metric)
-
     return data
+
 
 '''
 Gets all challenges with at least two days of data.
@@ -101,6 +85,7 @@ def getMostTrendingChallenge() -> dict:
             challenges[name].append(i)
     return __calculateGainedScore(challenges)[:5]
 
+
 def getOverallMostPopularVideos():
     db = connectToDB("TikTokDB")
     collection = db.DailyTrends
@@ -115,6 +100,7 @@ def getOverallMostPopularVideos():
                 encounteredVideos[vid['id']] = vid['score']
     mostPopular = sorted(encounteredVideos.items(), key= lambda item: item[1], reverse= True)[:10]
     return [i[0] for i in mostPopular]
+
 
 def __calculateGainedScore(challenges: dict) -> list:
     scores = list()
@@ -135,6 +121,14 @@ def __calculateGainedScore(challenges: dict) -> list:
         difference = maxScore - minScore
         if difference > 0:
             scores.append({'name': name, 'minScore': int(minScore), 'maxScore': int(maxScore), 'difference': int(difference), 'likesGained': int(maxLikes - minLikes), 'viewsGained': int(maxViews - minViews), 'sharesGained': int(maxShares - minShares)})
-    
     return sorted(scores, key=itemgetter('difference'), reverse=True)
 
+def connectToDB(name):
+    try:
+        client = pymongo.MongoClient("mongodb+srv://TikTokApi:3patates@tiktokcluster.vcf8n.mongodb.net/?retryWrites=true&w=majority")
+        db = client[f"{name}"]
+        return db
+    except Exception as ex:
+        template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+        message = template.format(type(ex).__name__, ex.args)
+        print(message)
