@@ -13,7 +13,7 @@ def getDailyChallenges():
     Return today's 5 top scoring challenges
     '''
     # connect to db
-    db = connectToDB("TikTokDB")
+    db = __connectToDB("TikTokDB")
     collection = db.DailyTrends
 
     # find items with date equal to today
@@ -28,7 +28,7 @@ def getDailyChallenges():
 
 def getTopDailyVideo(hashtag):
     # connect to db
-    db = connectToDB("TikTokDB")
+    db = __connectToDB("TikTokDB")
     collection = db.DailyTrends
 
     # find items with date equal to today
@@ -48,7 +48,7 @@ def getTopDailyVideo(hashtag):
 
 def getChallengeEvolution(hashtag, metric):
     # connect to db
-    db = connectToDB("TikTokDB")
+    db = __connectToDB("TikTokDB")
     collection = db.DailyTrends
     # find entries of hashtag with ascending date
     cursor = collection.find({
@@ -67,7 +67,7 @@ Returns the one with the biggest increase in score between
 the last metric and the first one.
 '''
 def getMostTrendingChallenge() -> dict:
-    db = connectToDB("TikTokDB")
+    db = __connectToDB("TikTokDB")
     collection = db.DailyTrends
     # find items with date equal to today
     cursor = collection.find({},{}).sort([("name", 1), ('date', 1)])
@@ -83,7 +83,7 @@ def getMostTrendingChallenge() -> dict:
 
 
 def getOverallMostPopularVideos():
-    db = connectToDB("TikTokDB")
+    db = __connectToDB("TikTokDB")
     collection = db.DailyTrends
     encounteredVideos = {}
     cursor = collection.find({},{"_id": 0 ,"date": 1, "videos": 1})
@@ -98,7 +98,7 @@ def getOverallMostPopularVideos():
     return [i[0] for i in mostPopular]
 
 def getDailyCrawlingScore():
-    db = connectToDB("TikTokDB")
+    db = __connectToDB("TikTokDB")
     collection = db.DailyTrends
     dailyScores = dict()
     cursor = collection.find({},{"_id": 0 ,"name": 1, 'date': 1 , "score": 1}).sort('date', 1)
@@ -111,6 +111,21 @@ def getDailyCrawlingScore():
             prevScore = dailyScores[date]
             dailyScores[date] = prevScore + score
     return utils.plotCrawlingProgress(dailyScores)
+
+def getAllChallenges():
+    db = __connectToDB("TikTokDB")
+    collection = db.DailyTrends
+    cursor = collection.find({}, {"_id": 0, "name": 1, "date": 1, "score": 1}).sort('date', 1)
+    return [i for i in cursor]
+
+def getDistinctChallenges():
+    db = __connectToDB("TikTokDB")
+    collection = db.DailyTrends
+    cursor = collection.find({}, {"_id": 0, "name": 1})
+    results = set()
+    for i in cursor:
+        results.add(i['name'])
+    return {"names": [i for i in  results], 'count': len(results) }
 
 def __calculateGainedScore(challenges: dict) -> list:
     scores = list()
@@ -133,7 +148,7 @@ def __calculateGainedScore(challenges: dict) -> list:
             scores.append({'name': name, 'minScore': int(minScore), 'maxScore': int(maxScore), 'difference': int(difference), 'likesGained': int(maxLikes - minLikes), 'viewsGained': int(maxViews - minViews), 'sharesGained': int(maxShares - minShares)})
     return sorted(scores, key=itemgetter('difference'), reverse=True)
 
-def connectToDB(name):
+def __connectToDB(name):
     try:
         client = pymongo.MongoClient("mongodb+srv://TikTokApi:3patates@tiktokcluster.vcf8n.mongodb.net/?retryWrites=true&w=majority")
         db = client[f"{name}"]
