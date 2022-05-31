@@ -1,4 +1,3 @@
-import json
 from flask import Flask, request, jsonify, Response, make_response
 import service
 
@@ -44,13 +43,10 @@ def getDailyCrawlingScore():
     plot = service.getDailyCrawlingScore()
     return responseWithPlot(plot)
 
-@app.route("/api/v1/all-challenges", methods=["GET"])
-def getAllChallenges():
-    return jsonify(challenges = service.getAllChallenges())
+@app.route("/api/v1/challenge-with-most-videos", methods=["GET"])
+def getChallengeWithMostVideos():
+    return service.challengeWithMostVideos()
 
-@app.route("/api/v1/distinct-challenges", methods=["GET"])
-def getDistinctChallenges():
-    return jsonify(challenges = service.getDistinctChallenges())
 
 def responseWithPlot(plot):
     response = make_response(plot)

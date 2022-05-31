@@ -157,3 +157,38 @@ def __connectToDB(name):
         template = "An exception of type {0} occurred. Arguments:\n{1!r}"
         message = template.format(type(ex).__name__, ex.args)
         print(message)
+        
+def challengeWithMostVideos():
+
+    db = __connectToDB("TikTokDB")
+    collection = db.DailyTrends
+
+    pipeline = [
+        {"$unwind": "$videos"},
+        {"$group": {
+            "_id" : {"name": "$name"},
+            "count": {"$sum": 1}
+            }}
+    ]
+
+    pipeline1 = [
+    {"$unwind": "$videos"},
+    {"$group": {
+        "_id" : "$name",
+        "uniqueCount": {"$addToSet": "$videos.id"}
+        }},
+    {"$project": {"_id": 0, "name": "$_id", "uniqueVideoCount": {"$size": "$uniqueCount"}}},
+    {"$sort": {"uniqueVideoCount" : -1}},
+    {"$limit": 1}
+    ]
+
+    pipeline2 = [
+    {"$unwind": "$videos"}
+    ]
+    import pprint 
+    #pprint.pprint(list(collection.aggregate(pipeline2)))
+    #pprint.pprint(list(collection.aggregate(pipeline)))
+    cursor = collection.aggregate(pipeline1)
+    return cursor.next()
+challengeWithMostVideos()
+ 
