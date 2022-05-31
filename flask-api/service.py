@@ -164,14 +164,6 @@ def challengeWithMostVideos():
     collection = db.DailyTrends
 
     pipeline = [
-        {"$unwind": "$videos"},
-        {"$group": {
-            "_id" : {"name": "$name"},
-            "count": {"$sum": 1}
-            }}
-    ]
-
-    pipeline1 = [
     {"$unwind": "$videos"},
     {"$group": {
         "_id" : "$name",
@@ -182,13 +174,6 @@ def challengeWithMostVideos():
     {"$limit": 1}
     ]
 
-    pipeline2 = [
-    {"$unwind": "$videos"}
-    ]
-    import pprint 
-    #pprint.pprint(list(collection.aggregate(pipeline2)))
-    #pprint.pprint(list(collection.aggregate(pipeline)))
-    cursor = collection.aggregate(pipeline1)
+    cursor = collection.aggregate(pipeline)
     return cursor.next()
-challengeWithMostVideos()
  
