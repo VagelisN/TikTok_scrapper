@@ -15,7 +15,7 @@ def getVideo():
     hashtag = request.args.get("hashtag")
     if hashtag:
         video_binary = service.getTopDailyVideo(hashtag=hashtag)
-        return responseWithPlot(video_binary)
+        return responseWithVideo(video_binary)
     else:
         return "hashtag url parameter needed"
 
@@ -53,6 +53,14 @@ def responseWithPlot(plot):
     response.headers.set('Content-Type', 'image/png')
     response.headers.set(
         'Content-Disposition', 'attachment', filename="plot.png"
+    )
+    return response
+
+def responseWithVideo(video):
+    response = make_response(video)
+    response.headers.set('Content-Type', 'video/mp4')
+    response.headers.set(
+        'Content-Disposition', 'attachment', filename="video.mp4"
     )
     return response
 
